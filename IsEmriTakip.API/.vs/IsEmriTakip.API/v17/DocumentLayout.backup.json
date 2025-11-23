@@ -1,0 +1,90 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|c:\\users\\senem\\source\\repos\\isemritakip.api\\isemritakip.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|solutionrelative:isemritakip.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|c:\\users\\senem\\source\\repos\\isemritakip.api\\isemritakip.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|solutionrelative:isemritakip.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|c:\\users\\senem\\source\\repos\\isemritakip.api\\isemritakip.api\\controllers\\gorevlerimcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|solutionrelative:isemritakip.api\\controllers\\gorevlerimcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|c:\\users\\senem\\source\\repos\\isemritakip.api\\isemritakip.api\\dtos\\gorevdurumupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED611E55-8776-49C1-8E50-0D7DCDCD4820}|IsEmriTakip.API\\IsEmriTakip.API.csproj|solutionrelative:isemritakip.api\\dtos\\gorevdurumupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "IsEmriTakip.API\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Properties\\launchSettings.json",
+              "RelativeToolTip": "IsEmriTakip.API\\Properties\\launchSettings.json",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-20T15:45:22.91Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Program.cs",
+              "RelativeDocumentMoniker": "IsEmriTakip.API\\Program.cs",
+              "ToolTip": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Program.cs",
+              "RelativeToolTip": "IsEmriTakip.API\\Program.cs",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAAAF8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-20T15:33:15.44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GorevlerimController.cs",
+              "DocumentMoniker": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Controllers\\GorevlerimController.cs",
+              "RelativeDocumentMoniker": "IsEmriTakip.API\\Controllers\\GorevlerimController.cs",
+              "ToolTip": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\Controllers\\GorevlerimController.cs",
+              "RelativeToolTip": "IsEmriTakip.API\\Controllers\\GorevlerimController.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAiwFUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-20T13:33:19.594Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "GorevDurumUpdateDto.cs",
+              "DocumentMoniker": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\DTOs\\GorevDurumUpdateDto.cs",
+              "RelativeDocumentMoniker": "IsEmriTakip.API\\DTOs\\GorevDurumUpdateDto.cs",
+              "ToolTip": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\DTOs\\GorevDurumUpdateDto.cs",
+              "RelativeToolTip": "IsEmriTakip.API\\DTOs\\GorevDurumUpdateDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-20T13:31:55.396Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
