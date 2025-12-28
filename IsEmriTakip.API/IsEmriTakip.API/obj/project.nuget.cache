@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8rFWel4oR2o=",
+  "dgSpecHash": "T9/Ob2QF2Qs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
+  "projectFilePath": "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\senem\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\senem\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

@@ -3,10 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // WEB (CHROME) İÇİN AYAR:
-  // Tarayıcıda çalıştığın için doğrudan localhost kullanabilirsin.
-  // DİKKAT: Backend portunun (burada 5266) doğru olduğundan emin ol. 
-  // Backend çalışırken tarayıcıda açılan adres neyse (örn: https://localhost:7079) onu yaz.
+  
   final String baseUrl = "http://localhost:5266/api"; 
 
   // --- 1. GİRİŞ YAP (LOGIN) ---
@@ -18,7 +15,7 @@ class ApiService {
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json', // Web için eklemek iyidir
+          'Accept': 'application/json', 
         },
         body: jsonEncode({
           'email': email,
@@ -29,8 +26,8 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String token = data['token'];
-        String? rol = data['rol']; // Backend'den rol dönüyorsa al
-        
+        String? rol = data['rol']; 
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwt_token', token);
         if (rol != null) await prefs.setString('user_role', rol);
@@ -48,7 +45,7 @@ class ApiService {
 
   // --- 2. GÖREVLERİMİ GETİR (GET) ---
   Future<List<dynamic>> getMyTasks() async {
-    final url = Uri.parse('$baseUrl/gorevlerim'); // Endpoint ismini kontrol et
+    final url = Uri.parse('$baseUrl/gorevlerim'); 
     final token = await _getToken();
 
     if (token == null) return [];
@@ -74,11 +71,10 @@ class ApiService {
     }
   }
 
-  // Görev Durumunu Güncelle
+  // --- 3. GÖREV DURUMUNU GÜNCELLE (UPDATE) ---
   Future<bool> updateTaskStatus(int isEmriID, int yeniDurumId) async {
     try {
-      // DİKKAT: Backend'deki [FromQuery] yapısına uygun URL:
-      // Örn: .../api/IsEmirleri/7/durum?yeniDurumId=3
+      
       final response = await http.put(
         Uri.parse('$baseUrl/IsEmirleri/$isEmriID/durum?yeniDurumId=$yeniDurumId'),
         headers: await _getHeaders(),
@@ -102,20 +98,20 @@ class ApiService {
     await prefs.clear();
   }
 
-  // --- YARDIMCI ---
+  
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('jwt_token');
   }
   
-  // --- YARDIMCI: Header Oluşturucu (Token'ı otomatik ekler) ---
+  
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? ""; // Token yoksa boş string al
+    final token = prefs.getString('token') ?? ""; 
     
     return {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token', // Backend'deki [Authorize] kilidini açan anahtar
+      'Authorization': 'Bearer $token', 
     };
   }
 }
