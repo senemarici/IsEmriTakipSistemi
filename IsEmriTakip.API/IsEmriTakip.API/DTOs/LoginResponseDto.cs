@@ -7,6 +7,6 @@ namespace IsEmriTakip.API.DTOs
     {
         public string Email { get; set; }
         public string Rol { get; set; }
-        public string Token { get; set; } // En önemlisi: JWT Jetonu
+        public string Token { get; set; } 
     }
 }

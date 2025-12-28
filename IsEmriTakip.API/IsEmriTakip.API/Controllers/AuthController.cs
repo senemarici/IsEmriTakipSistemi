@@ -1,12 +1,14 @@
-﻿using IsEmriTakip.API.Data;
-using IsEmriTakip.API.DTOs;
-using IsEmriTakip.API.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
+using IsEmriTakip.API.Data;
+using IsEmriTakip.API.Models;
+
+using BCrypt.Net;
 
 namespace IsEmriTakip.API.Controllers
 {
@@ -14,7 +16,7 @@ namespace IsEmriTakip.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context; 
         private readonly IConfiguration _configuration;
 
         public AuthController(ApplicationDbContext context, IConfiguration configuration)
@@ -23,95 +25,108 @@ namespace IsEmriTakip.API.Controllers
             _configuration = configuration;
         }
 
-        // POST: api/auth/register
-        [HttpPost("register")]  //Metodun tam adresini belirtir. bu adresin "yeni veri kaydetmek" için kullanıldığını belirtir.
-        public async Task<IActionResult> Register(RegisterDto registerDto)
+        // --- MODELLER (DTO) ---
+        public class LoginDto
         {
-            // 1. Bu email adresi zaten var mı?
-            if (await _context.Kullanicilar.AnyAsync(k => k.Email == registerDto.Email))  // eposta kullanımda mı kontrol eder.
+            public string Email { get; set; }
+            public string Sifre { get; set; }
+        }
+
+        public class RegisterDto
+        {
+            public string Ad { get; set; }
+            public string Soyad { get; set; }
+            public string Email { get; set; }
+            public string Sifre { get; set; }
+            public int RolID { get; set; } // 1: Yönetici, 2: Teknisyen
+        }
+
+        // --- 1. KAYIT OL (REGISTER) ---
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        {
+            
+            if (await _context.Kullanicilar.AnyAsync(x => x.Email == model.Email))
             {
-                return BadRequest("Bu email adresi zaten kullanılıyor.");
+                return BadRequest(new { message = "Bu e-posta adresi zaten kullanımda." });
             }
 
-            // 2. Şifreyi Hash'le (BCrypt)
-            string sifreHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Sifre);
+            
+            string hashliSifre = BCrypt.Net.BCrypt.HashPassword(model.Sifre);
 
-            // 3. Yeni Kullanıcı Nesnesi Oluştur
-            var yeniKullanici = new Kullanici //verileri DTOdan alıp hash'lenmiş şifre olarak veritabanına doldurur.
+           
+            var yeniKullanici = new Kullanici
             {
-                Ad = registerDto.Ad,
-                Soyad = registerDto.Soyad,
-                Email = registerDto.Email,
-                SifreHash = sifreHash,
-                RolID = registerDto.RolID
+                Ad = model.Ad,
+                Soyad = model.Soyad,
+                Email = model.Email,
+                SifreHash = hashliSifre, 
+                RolID = model.RolID
             };
 
-            // 4. Veritabanına kaydet
-            await _context.Kullanicilar.AddAsync(yeniKullanici);
+            _context.Kullanicilar.Add(yeniKullanici);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Kullanıcı başarıyla oluşturuldu." });
         }
 
-        // POST: api/auth/login => adresi bu şekilde belirler.
+        // --- 2. GİRİŞ YAP (LOGIN) ---
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto) //LoginDto formatında bir veri girişi bekler.
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            // 1. Kullanıcıyı bul
+            
             var kullanici = await _context.Kullanicilar
-                                    .Include(k => k.Rol) // Rol bilgisini de çek
-                                    .FirstOrDefaultAsync(k => k.Email == loginDto.Email); //E-postası LoginDtodan gelen e postayla eşleşen ilk kullanıcıyı bul.
+                .Include(k => k.Rol)
+                .FirstOrDefaultAsync(k => k.Email == loginDto.Email);
 
             if (kullanici == null)
             {
-                return Unauthorized("Geçersiz email veya şifre.");
+                return Unauthorized(new { message = "Kullanıcı bulunamadı." });
             }
 
-            // 2. Şifreyi Doğrula
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.Sifre, kullanici.SifreHash))
+            
+            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(loginDto.Sifre, kullanici.SifreHash);
+
+            if (!sifreDogruMu)
             {
-                return Unauthorized("Geçersiz email veya şifre.");
+                return Unauthorized(new { message = "Şifre hatalı!" });
             }
 
-            // 3. Şifre doğruysa -> JWT Token Oluştur
+            
             var token = CreateJwtToken(kullanici);
 
-            // 4. Cevabı (LoginResponseDto) hazırla
-            var response = new LoginResponseDto
+            return Ok(new
             {
-                Email = kullanici.Email,
-                Rol = kullanici.Rol.RolAdi,
-                Token = token
-            };
-
-            return Ok(response);
+                token = token,
+                email = kullanici.Email,
+                adSoyad = kullanici.Ad + " " + kullanici.Soyad,
+                rol = kullanici.Rol != null ? kullanici.Rol.RolAdi : "Teknisyen",
+                rolId = kullanici.RolID
+            });
         }
 
-        // --- Helper Metot --- JWT Üretici
+        // --- TOKEN ÜRETİCİ ---
         private string CreateJwtToken(Kullanici kullanici)
         {
-            // 1. "Gizli Anahtarı" (Key) Al
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            // 2. "İmza" (Credentials) Oluştur
+            var keyString = _configuration["Jwt:Key"] ?? "BuBenimCokGizliVeUzunAnahtarim123456789";
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Token'ın içine hangi bilgileri (claims) koyacağımızı belirliyoruz. Herkes okuyabilir ama değiştiremez.
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, kullanici.KullaniciID.ToString()), // Benzersiz ID
+                new Claim(JwtRegisteredClaimNames.Sub, kullanici.KullaniciID.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, kullanici.Email),
-                new Claim(ClaimTypes.Role, kullanici.Rol.RolAdi) // Kullanıcının Rolü
+                new Claim(ClaimTypes.Role, kullanici.Rol != null ? kullanici.Rol.RolAdi : "Teknisyen"),
+                new Claim("AdSoyad", kullanici.Ad + " " + kullanici.Soyad)
             };
 
-            //4. Kartın Kendisini (Token) Oluştur
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"], //Kim yayınladı?
-                audience: _configuration["Jwt:Audience"], //Kimin için?
-                claims: claims, 
-                expires: DateTime.Now.AddDays(1), // Token 1 gün geçerli olsun
+                issuer: _configuration["Jwt:Issuer"] ?? "IsEmriTakipAPI",
+                audience: _configuration["Jwt:Audience"] ?? "IsEmriTakipFrontend",
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
                 signingCredentials: credentials);
 
-            // 5. Kartı Metne Çevir ve Gönder
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

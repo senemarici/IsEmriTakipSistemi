@@ -16,7 +16,8 @@ namespace IsEmriTakip.API.DTOs
         [Required]
         public int OncelikID { get; set; }
 
-        // Not: DurumID'yi (1 = Atandı) ve OlusturanYoneticiID'yi (token'dan)
-        // otomatik olarak backend'de biz atayacağız.
+        public int? AtananTeknisyenID { get; set; }
+
+        
     }
 }

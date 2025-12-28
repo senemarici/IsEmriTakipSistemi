@@ -10,12 +10,14 @@ namespace IsEmriTakip.API.DTOs
         public string? Aciklama { get; set; }
         public DateTime OlusturmaTarihi { get; set; }
 
-        // ID'ler yerine doğrudan isimleri gösteriyoruz
+        
         public string KategoriAdi { get; set; }
         public string OncelikAdi { get; set; }
         public string DurumAdi { get; set; }
 
         public string OlusturanYonetici { get; set; }
         public string? AtananTeknisyen { get; set; }
+        public int OlusturanYoneticiID { get; internal set; }
+        public int? AtananTeknisyenID { get; internal set; }
     }
 }

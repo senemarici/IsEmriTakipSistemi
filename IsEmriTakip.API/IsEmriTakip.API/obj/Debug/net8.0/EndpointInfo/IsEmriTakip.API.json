@@ -161,6 +161,170 @@
           }
         }
       }
+    },
+    "/api/IsEmirleri/{id}": {
+      "put": {
+        "tags": [
+          "IsEmirleri"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IsEmriGuncelleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IsEmriGuncelleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/IsEmriGuncelleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "IsEmirleri"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/IsEmirleri/{id}/durum": {
+      "put": {
+        "tags": [
+          "IsEmirleri"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "yeniDurumId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar": {
+      "get": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar/teknisyenler": {
+      "get": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": { }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -198,59 +362,138 @@
           "oncelikID": {
             "type": "integer",
             "format": "int32"
+          },
+          "atananTeknisyenID": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "LoginDto": {
-        "required": [
-          "email",
-          "sifre"
-        ],
+      "IsEmriGuncelleDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "minLength": 1,
+          "baslik": {
             "type": "string",
-            "format": "email"
+            "nullable": true
           },
-          "sifre": {
-            "minLength": 1,
-            "type": "string"
+          "aciklama": {
+            "type": "string",
+            "nullable": true
+          },
+          "kategoriID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "oncelikID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "durumID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "atananTeknisyenID": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "RegisterDto": {
+      "Kullanici": {
         "required": [
           "ad",
           "email",
-          "rolID",
-          "sifre",
+          "sifreHash",
           "soyad"
         ],
         "type": "object",
         "properties": {
+          "kullaniciID": {
+            "type": "integer",
+            "format": "int32"
+          },
           "ad": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "soyad": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "email": {
-            "minLength": 1,
-            "type": "string",
-            "format": "email"
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
           },
-          "sifre": {
+          "sifreHash": {
             "minLength": 1,
             "type": "string"
           },
           "rolID": {
             "type": "integer",
             "format": "int32"
+          },
+          "rol": {
+            "$ref": "#/components/schemas/Rol"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "sifre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "string",
+            "nullable": true
+          },
+          "soyad": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "sifre": {
+            "type": "string",
+            "nullable": true
+          },
+          "rolID": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Rol": {
+        "type": "object",
+        "properties": {
+          "rolID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rolAdi": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

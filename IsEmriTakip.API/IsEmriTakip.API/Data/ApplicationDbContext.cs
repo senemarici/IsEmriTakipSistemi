@@ -1,18 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using IsEmriTakip.API.Models; // Models klasörümüzü ekliyoruz
-
+using IsEmriTakip.API.Models; 
 
 namespace IsEmriTakip.API.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        // Constructor (Yapıcı Metot)
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
-        // Modellerimizi DbSet olarak ekliyoruz (adım 1'de oluşturulan her plan {rol,kullanıcı gibi}DbSet olarak bildirilerek gerçek tabloları inşa edilir.
-        // Bu işlemler yapılmasaydı planlar tanımlanmış olsa bile EF Core görmezden gelir ve tablolar oluşturulmazdı.
         public DbSet<Rol> Roller { get; set; }
         public DbSet<Durum> Durumlar { get; set; }
         public DbSet<Kategori> Kategoriler { get; set; }
@@ -20,33 +16,27 @@ namespace IsEmriTakip.API.Data
         public DbSet<Kullanici> Kullanicilar { get; set; }
         public DbSet<IsEmri> IsEmirleri { get; set; }
 
-        //Planlarda belirtilmeyen ekstra talimatlar
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Kullanici.Email alanını UNIQUE yap.
             modelBuilder.Entity<Kullanici>()
                 .HasIndex(k => k.Email)
                 .IsUnique();
 
-            // IsEmri -> Kullanici (Yönetici) ilişkisi
             modelBuilder.Entity<IsEmri>()
                 .HasOne(ie => ie.OlusturanYonetici)
-                .WithMany() // Bir yönetici birden fazla iş emri oluşturabilir
+                .WithMany() 
                 .HasForeignKey(ie => ie.OlusturanYoneticiID)
-                .OnDelete(DeleteBehavior.Restrict); // Yönetici silinirse iş emirleri silinmesin
+                .OnDelete(DeleteBehavior.Restrict); 
 
-            // IsEmri -> Kullanici (Teknisyen) ilişkisi
             modelBuilder.Entity<IsEmri>()
                 .HasOne(ie => ie.AtananTeknisyen)
-                .WithMany() // Bir teknisyen birden fazla iş emrine atanabilir
+                .WithMany() 
                 .HasForeignKey(ie => ie.AtananTeknisyenID)
-                .OnDelete(DeleteBehavior.SetNull); // Teknisyen silinirse görev "null" a düşsün
+                .OnDelete(DeleteBehavior.SetNull); 
 
-            // --- BAŞLANGIÇ VERİSİ (SEED DATA) ---
-            // Uygulama ilk kurulduğunda bu veriler tablolara eklenecek
 
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { RolID = 1, RolAdi = "Yonetici" },

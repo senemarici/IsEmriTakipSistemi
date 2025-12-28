@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj": {}
+    "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj": {
+    "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
+        "projectUniqueName": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
         "projectName": "IsEmriTakip.API",
-        "projectPath": "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
+        "projectPath": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\IsEmriTakip.API.csproj",
         "packagesPath": "C:\\Users\\senem\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\senem\\Projelerim\\IsEmriTakip.API\\IsEmriTakip.API\\obj\\",
+        "outputPath": "C:\\Users\\senem\\source\\repos\\IsEmriTakip.API\\IsEmriTakip.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,18 +1,18 @@
-﻿using IsEmriTakip.API.Data;
+﻿using System.Security.Claims;
+using IsEmriTakip.API.Data;
 using IsEmriTakip.API.DTOs;
 using IsEmriTakip.API.Models;
-using Microsoft.AspNetCore.Authorization; // <-- KORUMA İÇİN
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims; // <-- TOKEN'DAN VERİ OKUMAK İÇİN
+using TaskLink.DTOs;
 
 namespace IsEmriTakip.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Yonetici")] // <-- !!! EN ÖNEMLİ KISIM !!!
-    // Bu satır, bu controller'daki TÜM endpoint'lerin 
-    // "Yonetici" rolüne sahip geçerli bir token gerektirdiğini söyler.
+    
+    [Authorize]
     public class IsEmirleriController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -22,16 +22,14 @@ namespace IsEmriTakip.API.Controllers
             _context = context;
         }
 
-        // POST: api/isemirleri
+       
         [HttpPost]
+        
+        [Authorize(Roles = "Yonetici")]
         public async Task<IActionResult> Olustur(IsEmriCreateDto createDto)
         {
-            // Token'dan giriş yapan yöneticinin ID'sini alıyoruz
             var yoneticiIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(yoneticiIdString))
-            {
-                return Unauthorized("Token'dan kullanıcı ID'si okunamadı.");
-            }
+            if (string.IsNullOrEmpty(yoneticiIdString)) return Unauthorized();
 
             int yoneticiId = int.Parse(yoneticiIdString);
 
@@ -41,44 +39,103 @@ namespace IsEmriTakip.API.Controllers
                 Aciklama = createDto.Aciklama,
                 KategoriID = createDto.KategoriID,
                 OncelikID = createDto.OncelikID,
-                OlusturmaTarihi = DateTime.UtcNow.AddHours(3), // Türkiye saati için +3
-                DurumID = 1, // 1 = "Atandı" (Bunu Adım 12'de garantilemiştik)
+                OlusturmaTarihi = DateTime.UtcNow.AddHours(3),
                 OlusturanYoneticiID = yoneticiId,
-                AtananTeknisyenID = null // Henüz atama yok
+                AtananTeknisyenID = (createDto.AtananTeknisyenID.HasValue && createDto.AtananTeknisyenID > 0) ? createDto.AtananTeknisyenID : null,
+                DurumID = (createDto.AtananTeknisyenID.HasValue && createDto.AtananTeknisyenID > 0) ? 2 : 1
             };
 
             await _context.IsEmirleri.AddAsync(yeniIsEmri);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "İş emri başarıyla oluşturuldu.", id = yeniIsEmri.IsEmriID });
+            return Ok(new { message = "İş emri oluşturuldu.", id = yeniIsEmri.IsEmriID });
         }
 
-        // GET: api/isemirleri
+        
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Yonetici")] 
+        public async Task<IActionResult> Guncelle(int id, [FromBody] IsEmriGuncelleDto dto)
+        {
+            var mevcut = await _context.IsEmirleri.FindAsync(id);
+            if (mevcut == null) return NotFound();
+
+            mevcut.Baslik = dto.Baslik;
+            mevcut.Aciklama = dto.Aciklama;
+            mevcut.KategoriID = dto.KategoriID;
+            mevcut.OncelikID = dto.OncelikID;
+            mevcut.DurumID = dto.DurumID;
+            if (dto.AtananTeknisyenID.HasValue) mevcut.AtananTeknisyenID = dto.AtananTeknisyenID;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { mesaj = "Güncellendi." });
+        }
+
+        
+        [HttpPut("{id}/durum")]
+        [AllowAnonymous]
+         
+        
+        public async Task<IActionResult> DurumGuncelle(int id, [FromQuery] int yeniDurumId)
+        {
+            var isEmri = await _context.IsEmirleri.FindAsync(id);
+            if (isEmri == null) return NotFound("İş emri bulunamadı.");
+
+            
+
+            isEmri.DurumID = yeniDurumId;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mesaj = "Durum başarıyla güncellendi." });
+        }
+
+        
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Yonetici")] 
+        public async Task<IActionResult> Sil(int id)
+        {
+            var isEmri = await _context.IsEmirleri.FindAsync(id);
+            if (isEmri == null) return NotFound();
+
+            _context.IsEmirleri.Remove(isEmri);
+            await _context.SaveChangesAsync();
+            return Ok(new { mesaj = "Silindi." });
+        }
+
+       
         [HttpGet]
+        
         public async Task<IActionResult> Listele()
         {
-            var isEmirleri = await _context.IsEmirleri
-                .Include(ie => ie.Kategori) // Kategori bilgilerini çek
-                .Include(ie => ie.Oncelik) // Oncelik bilgilerini çek
-                .Include(ie => ie.Durum)   // Durum bilgilerini çek
-                .Include(ie => ie.OlusturanYonetici) // Yönetici bilgilerini çek
-                .Include(ie => ie.AtananTeknisyen)   // Teknisyen bilgilerini çek
+            
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var sorgu = _context.IsEmirleri
+                .Include(ie => ie.Kategori)
+                .Include(ie => ie.Oncelik)
+                .Include(ie => ie.Durum)
+                .Include(ie => ie.OlusturanYonetici)
+                .Include(ie => ie.AtananTeknisyen)
+                .AsQueryable();
+
+           
+
+            var liste = await sorgu
                 .OrderByDescending(ie => ie.OlusturmaTarihi)
-                .Select(ie => new IsEmriViewDto // Veriyi DTO'ya dönüştür
+                .Select(ie => new IsEmriViewDto
                 {
                     IsEmriID = ie.IsEmriID,
                     Baslik = ie.Baslik,
                     Aciklama = ie.Aciklama,
                     OlusturmaTarihi = ie.OlusturmaTarihi,
-                    KategoriAdi = ie.Kategori.KategoriAdi,
-                    OncelikAdi = ie.Oncelik.OncelikAdi,
-                    DurumAdi = ie.Durum.DurumAdi,
-                    OlusturanYonetici = ie.OlusturanYonetici.Ad + " " + ie.OlusturanYonetici.Soyad,
-                    AtananTeknisyen = ie.AtananTeknisyen == null ? "Atanmadı" : (ie.AtananTeknisyen.Ad + " " + ie.AtananTeknisyen.Soyad)
+                    KategoriAdi = ie.Kategori != null ? ie.Kategori.KategoriAdi : "-",
+                    OncelikAdi = ie.Oncelik != null ? ie.Oncelik.OncelikAdi : "-",
+                    DurumAdi = ie.Durum != null ? ie.Durum.DurumAdi : "-",
+                    AtananTeknisyen = ie.AtananTeknisyen != null ? ie.AtananTeknisyen.Ad + " " + ie.AtananTeknisyen.Soyad : "Atanmadı"
                 })
                 .ToListAsync();
 
-            return Ok(isEmirleri);
+            return Ok(liste);
         }
     }
 }
