@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:is_emri_takip_app/screens/work_order_detail_screen.dart';
 import 'package:is_emri_takip_app/services/api_services.dart';
+import 'package:is_emri_takip_app/screens/login_screen.dart'; // <-- GİRİŞ EKRANI IMPORTU (Dosya adın farklıysa düzelt)
 
 class WorkOrderListScreen extends StatefulWidget {
   const WorkOrderListScreen({super.key});
@@ -13,7 +15,6 @@ class WorkOrderListScreen extends StatefulWidget {
 class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
   final ApiService _apiService = ApiService();
 
-  // Sayfayı aşağı çekince yenilemek için
   Future<void> _refreshList() async {
     setState(() {});
   }
@@ -28,28 +29,38 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
         centerTitle: true,
         automaticallyImplyLeading: false,
         actions: [
-          // Çıkış Butonu
+          // --- DÜZELTİLEN ÇIKIŞ BUTONU ---
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () => Navigator.pop(context), // Girişe atar
+            onPressed: () async {
+              // 1. Token'ı hafızadan sil
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('token');
+
+              // 2. Güvenli yönlendirme
+              if (context.mounted) {
+                // Tüm geçmişi sil ve Login ekranını aç (Geri tuşuna basınca dönemezsin)
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()), 
+                  (route) => false, // Geçmişteki tüm sayfaları kapat
+                );
+              }
+            },
           ),
         ],
       ),
-      // FUTURE BUILDER: API'den veriyi bekleyen yapı
       body: FutureBuilder<List<dynamic>>(
-        future: _apiService.getMyTasks(), // API'ye git sor
+        future: _apiService.getMyTasks(),
         builder: (context, snapshot) {
-          // 1. DURUM: Veri Bekleniyor (Yükleniyor)
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2. DURUM: Hata Çıktı
           if (snapshot.hasError) {
             return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
           }
 
-          // 3. DURUM: Veri Geldi ama Liste Boş
           final tasks = snapshot.data ?? [];
           if (tasks.isEmpty) {
             return Center(
@@ -64,7 +75,6 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
             );
           }
 
-          // 4. DURUM: Veri Geldi ve Dolu -> Listeyi Çiz
           return RefreshIndicator(
             onRefresh: _refreshList,
             child: ListView.separated(
@@ -72,31 +82,21 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
               itemCount: tasks.length,
               separatorBuilder: (ctx, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final task = tasks[index]; // Sıradaki görev verisi (JSON)
-                
-                return _buildTaskCard(
-                  context,
-                  title: task['baslik'] ?? 'Başlıksız',
-                  description: task['aciklama'] ?? '',
-                  date: _formatDate(task['olusturmaTarihi']),
-                  status: task['durumAdi'] ?? 'Bilinmiyor',
-                  categoryName: task['kategoriAdi'] ?? 'Genel',
-                  taskId: task['isEmriID'],
-                );
+                final task = tasks[index];
+                return _buildTaskCard(context, task);
               },
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _refreshList, // Basınca listeyi yenile
+        onPressed: _refreshList,
         backgroundColor: const Color(0xFF0F172A),
         child: const Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
 
-  // Tarihi güzelleştiren basit fonksiyon (2025-10-30 -> 30.10.2025 gibi)
   String _formatDate(String? dateStr) {
     if (dateStr == null) return "";
     try {
@@ -107,31 +107,26 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
     }
   }
 
-  Widget _buildTaskCard(BuildContext context, {
-    required String title,
-    required String description,
-    required String date,
-    required String status,
-    required String categoryName,
-    required int taskId,
-  }) {
-    
-    // İkon Seçici Mantığı (İsme göre)
+  Widget _buildTaskCard(BuildContext context, Map<String, dynamic> task) {
+    final title = task['baslik'] ?? 'Başlıksız';
+    final description = task['aciklama'] ?? '';
+    final date = _formatDate(task['olusturmaTarihi']);
+    final status = task['durumAdi'] ?? 'Bilinmiyor';
+    final categoryName = task['kategoriAdi'] ?? 'Genel';
+
     IconData getIcon() {
-      // Backend'den gelen Kategori Adına göre ikon seçiyoruz
       if (categoryName.contains("Bakım")) return Icons.build_circle_outlined;
       if (categoryName.contains("Arıza")) return Icons.error_outline;
       if (categoryName.contains("Montaj")) return Icons.cable;
       return Icons.work_outline;
     }
 
-    // Duruma göre renk seçici
     Color getStatusColor() {
       if (status == "Tamamlandı") return Colors.green.shade100;
       if (status == "İptal Edildi") return Colors.red.shade100;
-      return Colors.orange.shade100; // Atandı, Devam Ediyor
+      return Colors.orange.shade100;
     }
-    
+
     Color getStatusTextColor() {
       if (status == "Tamamlandı") return Colors.green.shade800;
       if (status == "İptal Edildi") return Colors.red.shade800;
@@ -139,9 +134,17 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
     }
 
     return GestureDetector(
-      onTap: () {
-        // Detay sayfasına git (İleride buraya ID göndereceğiz)
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkOrderDetailScreen()));
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WorkOrderDetailScreen(task: task),
+          ),
+        );
+
+        if (result == true) {
+          _refreshList();
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -154,19 +157,16 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            // SOL İKON
             Container(
               height: 50,
               width: 50,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 255, 5, 5),
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 255, 5, 5),
                 shape: BoxShape.circle,
               ),
-              child: Icon(getIcon(), color: const Color.fromARGB(255, 255, 255, 255), size: 28),
+              child: Icon(getIcon(), color: Colors.white, size: 28),
             ),
             const SizedBox(width: 16),
-            
-            // ORTA BİLGİ
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,10 +174,10 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
                   Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),
                   Text(
-                    description, 
+                    description,
                     style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis, // Uzun yazı taşmasın
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -190,8 +190,6 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
                 ],
               ),
             ),
-
-            // SAĞ DURUM
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
